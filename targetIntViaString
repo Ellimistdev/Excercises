@@ -1,0 +1,146 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+
+/*
+Given a string x of digits, 0-9 of length 2 - 10 and an int y that is between -10^4 and 10^4
+determine all possible solutions to get y, via inserting the operators
+*, +, and/or - into x
+
+e.g. 
+string x = "123"
+int y = 5
+
+"1+2+3" and "1*2*3" are valid solutions
+"1-2*3" is an invalid solution
+
+*/
+
+
+
+public class Program
+{
+    public static void Main()
+    {
+        string digits = "123456"; //0-9 , 2 ≤ digits.length ≤ 10
+        int target = 6; // -10^4 ≤ target ≤ 10^4
+        string[] output = composeExpression(digits, target);
+        Console.WriteLine("OUT: {0}", output.Length);
+		List<string> allTestStrings = getAllTestStrings(digits);
+    }
+
+    static string[] composeExpression(string digits, int target)
+    {
+        //take a string of numbers and determine all permutations that result in the target int using the operators *, +, and -
+        //string to int[]
+        int[] ints = digits.Select(n => (int)char.GetNumericValue(n)).ToArray();
+        foreach (int entry in ints)
+        {
+            Console.WriteLine(entry);
+        }
+
+        List<string> validExpressions = findValidExpressions(ints, target);
+        //
+        return validExpressions.ToArray();
+    }
+
+    static List<string> findValidExpressions(int[] ints, int target)
+    {
+        List<string> validExpressions = new List<string>();
+        string testString = "123321123";
+        if (stringIsValid(testString, target))
+        {
+            validExpressions.Add(testString);
+        }
+
+        return validExpressions;
+    }
+
+    static bool stringIsValid(string testString, int target)
+    {
+        int testValue = parseString(testString);
+        if (testValue == target)
+        {
+            return true;
+        }
+
+        return false;
+    }
+	
+    static int parseString(string testString)
+    {
+        char[] chars = testString.ToCharArray();
+        int result = 0; 
+		       
+		int [] ints = Array.ConvertAll<string,int>(testString.Split(' '),int.Parse);
+		Console.WriteLine(testString);
+		foreach (int entry in ints)
+		{
+		 Console.WriteLine(entry);
+		}
+        // test single operators
+        // test + in all variants
+        // test - in all variants
+        // test * in all variants
+        //test 2 operators
+        // test + and - in all variants
+        // test - and * in all variants
+        // test + and * in all variants
+        //test 3 operators
+        // test +, -, and * in all variants
+        return result;
+    }
+	
+	//given a string "123" return a list of strings containing all possible ints, keeping order
+	//e.g. "123","1 23", "12 3", "1 2 3"
+	static List<string> getAllTestStrings(string testString)
+	{
+		List<string> allTestStrings = new List<string>();
+		int spaceCount = 1;
+		
+		allTestStrings.Add(testString);
+		
+		while (spaceCount < testString.Length)
+		{			
+			
+			insertSpaces(testString, spaceCount, 1, ref allTestStrings);
+			
+			
+			Console.WriteLine("after operation count: {0}", allTestStrings.Count);
+			
+			spaceCount++;	
+		}
+		
+		
+		foreach (string entry in allTestStrings)
+		{
+		  //Console.WriteLine(entry);
+		}
+		
+		return allTestStrings;
+	}
+	static void insertSpaces(string testString, int spaceCount, int index, ref List<string>allTestStrings)
+	{
+		string workingString = testString;
+		
+		for (int i = index; i < testString.Length; i++ )
+		{
+			workingString = testString.Insert(i," ");
+			
+			//insert additional spaces if neccesary
+			if ( spaceCount > 1)
+			{				
+				spaceCount--;
+				//using the newly transformed string, iterate again, passing over the newly added space
+				insertSpaces(workingString,spaceCount, i + 2, ref allTestStrings);				
+				
+			}			
+			if (!allTestStrings.Contains(workingString))
+				{
+					allTestStrings.Add(workingString);
+				}
+			
+		}
+	}
+	
+}
