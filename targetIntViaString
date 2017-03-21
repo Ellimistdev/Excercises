@@ -1,4 +1,6 @@
 using System;
+using System.Data;
+using System.Xml;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -16,80 +18,124 @@ int y = 5
 
 */
 
-
-
 public class Program
 {
     public static void Main()
     {
         string digits = "123456"; //0-9 , 2 ≤ digits.length ≤ 10
         int target = 6; // -10^4 ≤ target ≤ 10^4
-        string[] output = composeExpression(digits, target);
-        Console.WriteLine("OUT: {0}", output.Length);
+		
 		List<string> allTestStrings = getAllTestStrings(digits);
+		List<string> validExpressions = parseTestStrings(allTestStrings, target);		
+		
+		
     }
-
-    static string[] composeExpression(string digits, int target)
-    {
-        //take a string of numbers and determine all permutations that result in the target int using the operators *, +, and -
-        //string to int[]
-        int[] ints = digits.Select(n => (int)char.GetNumericValue(n)).ToArray();
-        foreach (int entry in ints)
-        {
-            Console.WriteLine(entry);
-        }
-
-        List<string> validExpressions = findValidExpressions(ints, target);
-        //
-        return validExpressions.ToArray();
-    }
-
-    static List<string> findValidExpressions(int[] ints, int target)
-    {
-        List<string> validExpressions = new List<string>();
-        string testString = "123321123";
-        if (stringIsValid(testString, target))
-        {
-            validExpressions.Add(testString);
-        }
-
-        return validExpressions;
-    }
-
-    static bool stringIsValid(string testString, int target)
-    {
-        int testValue = parseString(testString);
-        if (testValue == target)
-        {
-            return true;
-        }
-
-        return false;
-    }
-	
-    static int parseString(string testString)
-    {
-        char[] chars = testString.ToCharArray();
-        int result = 0; 
-		       
-		int [] ints = Array.ConvertAll<string,int>(testString.Split(' '),int.Parse);
-		Console.WriteLine(testString);
-		foreach (int entry in ints)
+	static List<string> parseTestStrings(List<string> allTestStrings, int target)
+	{
+		List<string> validExpressions = new List<string>();
+		
+		//foreach test string
+		foreach (string testString in allTestStrings)
 		{
-		 Console.WriteLine(entry);
+			//split string into int segments
+			string[] segments = testString.Split(' ');
+			
+			//may not need to cast these strings to ints, I think we convert them to strings again in generateExpressions
+			//initialize array to hold ints in testString
+			int[] ints = new int[segments.Length];
+			
+			//get int[] from testString segments
+			for (int i = 0; i < segments.Length; i++)
+			{
+				ints[i] = int.Parse(segments[i]);
+				Console.WriteLine("testString = {0},ints[{1}] = {2}",testString, i, ints[i]);
+			}
+			
+			//generate each test operation
+			string[] expressions = generateExpressions(ints);
+			
+			//evaluate each test operation
+			foreach (string expression in expressions)
+			{				
+				
+				//if test operation resolves to the target, 
+				if (validateExpression(expression,target))
+					{
+						//add operation to final list
+						validExpressions.Add(expression);
+					}
+			}
 		}
-        // test single operators
-        // test + in all variants
-        // test - in all variants
-        // test * in all variants
-        //test 2 operators
-        // test + and - in all variants
-        // test - and * in all variants
-        // test + and * in all variants
-        //test 3 operators
-        // test +, -, and * in all variants
-        return result;
-    }
+		return validExpressions;
+	}
+	static bool validateExpression(string expression, int target)
+	{
+		bool isValid = false;
+		DataTable dt = new DataTable();
+		int testValue = (int)dt.Compute(expression, "");
+		Console.WriteLine("expression == {0}, testValue == {1}, target == {2}",expression, testValue, target);
+		
+		if (testValue == target)
+		{
+			isValid = true;
+		}		
+		
+		return isValid;
+						
+	}
+	static string[] generateExpressions(int[] ints)
+	{
+		List<string> expressions = new List<string>();
+		
+		string[] possibleOperators = getPossibleOperators(ints);
+		
+		foreach (string operatorSet in possibleOperators)
+		{
+			string expression = "";
+			
+			//create string alternating between ints[i] and operatorSet[i]
+			for (int i = 0; i < ints.Length; i++)
+			{
+				expression += ints[i]; //toString?
+				expression += operatorSet[i];
+			}
+			expressions.Add(expression);
+			Console.WriteLine(expression);
+		
+		}	
+		
+		string[] allOperations = expressions.ToArray();
+		
+		return allOperations;
+		
+	}
+	
+	static string[] getPossibleOperators(int[] ints)
+	{	
+		int operatorCount = ints.Length - 1 ;
+		List<string> operators = new List<string>();
+		
+		//generate operator order
+			//using operatorCount, create all permutations of operators 
+			//e.g. for operatorCount == 1, string[] possibleOperators = new string[]{+, -, *}
+			//	   for operatorCount == 2, string[] possibleOperators = new string[]{++, +-, +*,--, -+, -*, **, *-,*+}
+		while (operatorCount > 0)
+		{
+			//
+			
+			
+			
+			
+			operatorCount--;	
+		}
+		
+		
+		
+		
+		string[] possibleOperators = operators.ToArray();
+		return possibleOperators;
+	}
+	
 	
 	//given a string "123" return a list of strings containing all possible ints, keeping order
 	//e.g. "123","1 23", "12 3", "1 2 3"
@@ -104,17 +150,7 @@ public class Program
 		{			
 			
 			insertSpaces(testString, spaceCount, 1, ref allTestStrings);
-			
-			
-			Console.WriteLine("after operation count: {0}", allTestStrings.Count);
-			
 			spaceCount++;	
-		}
-		
-		
-		foreach (string entry in allTestStrings)
-		{
-		  //Console.WriteLine(entry);
 		}
 		
 		return allTestStrings;
@@ -144,3 +180,66 @@ public class Program
 	}
 	
 }
+
+//abandoned approach
+	/*
+    //take a string of numbers and determine all permutations that result in the target int using the operators *, +, and -
+    static string[] composeExpression(string digits, int target)
+    {
+        //string to int[]
+        int[] ints = digits.Select(n => (int)char.GetNumericValue(n)).ToArray();
+		
+        foreach (int entry in ints)
+        {
+            Console.WriteLine(entry);
+        }
+        List<string> validExpressions = findValidExpressions(ints, target);
+        return validExpressions.ToArray();
+    }
+
+    static List<string> findValidExpressions(int[] ints, int target)
+    {
+        List<string> validExpressions = new List<string>();
+        string testString = "123321123";
+        if (stringIsValid(testString, target))
+        {
+            validExpressions.Add(testString);
+        }
+
+        return validExpressions;
+    }
+
+    static bool stringIsValid(string testString, int target)
+    {
+        int testValue = parseString(testString);
+        if (testValue == target)
+        {
+            return true;
+        }
+
+        return false;
+    }
+    static int parseString(string testString)
+    {
+        char[] chars = testString.ToCharArray();
+        int result = 0; 
+		       
+		int [] ints = Array.ConvertAll<string,int>(testString.Split(' '),int.Parse);
+		Console.WriteLine(testString);
+		foreach (int entry in ints)
+		{
+		 Console.WriteLine(entry);
+		}
+        // test single operators
+        // test + in all variants
+        // test - in all variants
+        // test * in all variants
+        //test 2 operators
+        // test + and - in all variants
+        // test - and * in all variants
+        // test + and * in all variants
+        //test 3 operators
+        // test +, -, and * in all variants
+        return result;
+    }
+	*/
