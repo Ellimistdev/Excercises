@@ -75,10 +75,8 @@ public class Program
 		//foreach test string
 		foreach (string testString in allTestStrings)
 		{
-			//Console.WriteLine("testString = {0}",testString);
 			//split string into int segments
 			string[] segments = testString.Split(' ');
-			//may not need to cast these strings to ints, I think we convert them to strings again in generateExpressions
 			//initialize array to hold ints in testString
 			int[] ints = new int[segments.Length];
 			//get int[] from testString segments
@@ -88,9 +86,7 @@ public class Program
 			}
 
 			//generate each test operation
-			//Console.WriteLine("foo");
 			string[] expressions = generateExpressions(ints);
-			//Console.WriteLine("bar");
 			//evaluate each test operation
 			foreach (string expression in expressions)
 			{
@@ -133,9 +129,10 @@ public class Program
 
 	//using operatorCount, create all permutations of operators 
 	//e.g. for operatorCount == 1, string[] possibleOperators = new string[]{+, -, *}
-	//	   for operatorCount == 2, string[] possibleOperators = new string[]{++, +-, +*,--, -+, -*, **, *-,*+}
+	//	   for operatorCount == 2, string[] possibleOperators = new string[]{++, +-, +*,--, -+, -*, **, *-,*+}	 
 	static string[] getPossibleOperators(int operatorCount)
 	{
+		//get upper limit
 		int maxExpressionCount = (int)Math.Pow(3, operatorCount);
 		List<string> operatorSet = new List<string>();
 		List<int> operatorsAsInts = new List<int>();
@@ -239,7 +236,7 @@ public class Program
 				operatorsAsInts.Add(operatorSet);
 			}
 		}
-
+		//find more if they exist
 		if (operatorsAsInts.Count < maxExpressionCount)
 		{
 			getOperatorPermutations(maxExpressionCount, ref workingInts, ref operatorsAsInts);
