@@ -1,5 +1,4 @@
 using System;
-using System.Data;
 using System.Xml;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
@@ -22,8 +21,8 @@ public class Program
 {
 	public static void Main()
 	{
-		string digits = "123"; //0-9 , 2 ≤ digits.length ≤ 10
-		int target = 6; // -10^4 ≤ target ≤ 10^4
+		string digits = "105"; //0-9 , 2 ≤ digits.length ≤ 10
+		int target = 5; // -10^4 ≤ target ≤ 10^4
 		List<string> allTestStrings = getAllTestStrings(digits);
 		List<string> validExpressions = parseTestStrings(allTestStrings, target);
 		Console.WriteLine("Digits = {0}, Target = {1}, validExpressions.Count = {2}", digits, target, validExpressions.Count);
@@ -79,15 +78,15 @@ public class Program
 			//split string into int segments
 			string[] segments = testString.Split(' ');
 			//initialize array to hold ints in testString
-			int[] ints = new int[segments.Length];
+			double[] doubles = new double[segments.Length];
 			//get int[] from testString segments
 			for (int i = 0; i < segments.Length; i++)
 			{
-				ints[i] = int.Parse(segments[i]);
+				doubles[i] = double.Parse(segments[i]);
 			}
 
 			//generate each test operation
-			string[] expressions = generateExpressions(ints);
+			string[] expressions = generateExpressions(doubles);
 			//evaluate each test operation
 			foreach (string expression in expressions)
 			{
@@ -103,18 +102,18 @@ public class Program
 		return validExpressions;
 	}
 
-	static string[] generateExpressions(int[] ints)
+	static string[] generateExpressions(double[] doubles)
 	{
 		List<string> expressions = new List<string>();
-		string[] possibleOperators = getPossibleOperators(ints.Length - 1);
+		string[] possibleOperators = getPossibleOperators(doubles.Length - 1);
 		foreach (string operatorSet in possibleOperators)
 		{
 			string expression = "";
 			//create string alternating between ints[i] and operatorSet[i]
 			//e.g. for ints == {1,2} and operatorSet == {+}, expression should resolve to "1+2"
-			for (int i = 0; i < ints.Length; i++)
+			for (int i = 0; i < doubles.Length; i++)
 			{
-				expression += ints[i];
+				expression += doubles[i];
 				if (i < operatorSet.Length)
 				{
 					expression += operatorSet[i];
@@ -170,8 +169,9 @@ public class Program
 	static bool validateExpression(string expression, int target)
 	{
 		bool isValid = false;
-		DataTable dt = new DataTable();
-		int testValue = (int)dt.Compute(expression, "");
+		//DataTable dt = new DataTable();
+		//int testValue = (int)dt.Compute(expression, "");
+		double testValue = Evaluate(expression);
 		if (testValue == target)
 		{
 			isValid = true;
@@ -245,45 +245,111 @@ public class Program
 		}
 	}
 
-	static int Result(string expression)
+	static double Evaluate(string expression)
 	{
-		int result = 0;
+		double result = 0;
+		int operatorIndex = 0;
+		string[] operators = new string[]{"*", "/", "+", "-"};
+		string op1 = operators[operatorIndex];
+		operatorIndex++;
+		string op2 = operators[operatorIndex];
 		List<string> expParams = new List<string>(Regex.Split(expression, @"([()*+\/-])", RegexOptions.Multiline));
-		List<string> processedList = new List<string>();
-		for (int i = 1; i < expParams.Count; i++)
+		while (expParams.Count > 1)
 		{
-			string op = expParams[i];
-			//get int prior to and after operator			
-			int a = Convert.ToInt32(expParams[i - 1]);
-			int b = Convert.ToInt32(expParams[i + 1]);
-			switch (op)
+			//if expression does not contain either operator, try the next pair
+			if (!expParams.Contains(op1) & !expParams.Contains(op2))
 			{
-				case "*":
-				{
-					processedList.Add((a * b).ToString());
-					break;
-				}
+				operatorIndex++;
+				op1 = operators[operatorIndex];
+				operatorIndex++;
+				op2 = operators[operatorIndex];
+			}
 
-				case "/":
+			//if either operator is present, continue
+			if (expParams.Contains(op1) | expParams.Contains(op2))
+			{
+				//find first instance of valid operator
+				for (int i = 0; i < expParams.Count; i++)
 				{
-					processedList.Add((a / b).ToString());
-					break;
-				}
+					//when an operator is found, select ints on either side and process
+					if (expParams[i] == op1 || expParams[i] == op2)
+					{
+						string op = expParams[i];
+						double a = 0, b = 0;
+						//get int prior to and after operator		
+						try
+						{
+							a = Convert.ToDouble(expParams[i - 1]);
+						}
+						catch (Exception e)
+						{
+							Console.WriteLine("Failed to convert.ToDouble({0})",expParams[i-1]);
+							throw;
+						}
 
-				case "+":
-				{
-					processedList.Add((a + b).ToString());
-					break;
-				}
+						try
+						{							
+							b = Convert.ToDouble(expParams[i + 1]);
+						}
+						catch (Exception e)
+						{
+							Console.WriteLine("Failed to convert.ToDouble({0})",expParams[i+1]);
+							throw;
+						}
 
-				case "-":
-				{
-					processedList.Add((a - b).ToString());
-					break;
+						double c = 0;
+						switch (op)
+						{
+							case "*":
+							{
+								c = (a * b);
+								break;
+							}
+
+							case "/":
+							{
+								c = (a / b);
+								break;
+							}
+
+							case "+":
+							{
+								c = (a + b);
+								break;
+							}
+
+							case "-":
+							{
+								c = (a - b);
+								break;
+							}
+
+							default:
+							{
+								continue;
+							}
+						}
+
+						replaceOperationWithResult(i, c.ToString(), ref expParams);
+						//set i to index of insertion
+						i--;
+					}
 				}
 			}
 		}
 
+		result = Convert.ToDouble(expParams[0]);
 		return result;
+	}
+
+	//replace operator, previous and nexts ints with result of operation
+	static void replaceOperationWithResult(int index, string result, ref List<string> expParams)
+	{
+		for (int x = 0; x < 3; x++)
+		{
+			expParams.RemoveAt(index - 1);
+		}
+
+		expParams.Insert(index - 1, result);
 	}
 }
