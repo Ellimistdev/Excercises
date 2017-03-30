@@ -19,7 +19,7 @@ int y = 6
 */
 public class targetIntViaString
 {
-	public static void Main()
+	public static void Entry()
 	{
 		string digits = "1052"; //0-9 , 2 ≤ digits.length ≤ 10
 		int target = 5; // -10^4 ≤ target ≤ 10^4
