@@ -17,11 +17,11 @@ int y = 6
 "1-2*3" is an invalid solution
 
 */
-public class Program
+public class targetIntViaString
 {
 	public static void Main()
 	{
-		string digits = "105"; //0-9 , 2 ≤ digits.length ≤ 10
+		string digits = "1052"; //0-9 , 2 ≤ digits.length ≤ 10
 		int target = 5; // -10^4 ≤ target ≤ 10^4
 		List<string> allTestStrings = getAllTestStrings(digits);
 		List<string> validExpressions = parseTestStrings(allTestStrings, target);
@@ -30,6 +30,7 @@ public class Program
 		{
 			Console.WriteLine(expression);
 		}
+        Console.ReadLine();
 	}
 
 	//given a string "123" return a list of strings containing all possible ints, keeping order
@@ -91,7 +92,7 @@ public class Program
 			foreach (string expression in expressions)
 			{
 				//if test operation resolves to the target, 
-				if (validateExpression(expression, target))
+				if (ValidateExpression(expression, target))
 				{
 					//add operation to final list
 					validExpressions.Add(expression);
@@ -166,7 +167,7 @@ public class Program
 		return possibleOperators;
 	}
 
-	static bool validateExpression(string expression, int target)
+	static bool ValidateExpression(string expression, int target)
 	{
 		bool isValid = false;
 		//DataTable dt = new DataTable();
@@ -183,18 +184,29 @@ public class Program
 	static int createOperatorSet(int[] workingInts)
 	{
 		int operatorSet = workingInts[0];
-		//append each entry in workingInts to current operator to create the full operatorSet
-		for (int i = 1; i < workingInts.Length; i++)
-		{
-			operatorSet = int.Parse(operatorSet.ToString() + workingInts[i].ToString());
-		}
+       /* int counter = 0;
+        foreach (int a in workingInts)
+        {
+            Console.WriteLine("workingInts[{0}] == {1}", counter, a);
+            counter++;
+        }*/
+        //append each entry in workingInts to current operator to create the full operatorSet
+        Console.WriteLine("Attempting to parse operatorSet. Currently, operatorSet == {0}", operatorSet);
 
-		return operatorSet;
+        for (int i = 1; i < workingInts.Length; i++)
+		{
+                operatorSet = int.Parse(operatorSet.ToString() + workingInts[i].ToString());
+		}
+        Console.WriteLine("Returning operatorSet == {0}", operatorSet);
+
+        return operatorSet;
 	}
 
 	static void getOperatorPermutations(int maxExpressionCount, ref int[] workingInts, ref List<int> operatorsAsInts)
 	{
 		int operatorSet;
+        Console.WriteLine("\nmaxExpressionCount == {0}, workingInts.Length = {1}, operatorsAsInts.Count == {2}",maxExpressionCount, workingInts.Length, operatorsAsInts.Count);
+        Console.WriteLine("createOperatorSet from workingInts");
 		operatorSet = createOperatorSet(workingInts);
 		//add operatorSet to list
 		if (!operatorsAsInts.Contains(operatorSet))
@@ -210,7 +222,8 @@ public class Program
 			workingInts[workingInts.Length - 1] = 1;
 		}
 
-		//update operatorSet
+        //update operatorSet
+        Console.WriteLine("hit");
 		operatorSet = createOperatorSet(workingInts);
 		//add operatorSet to list
 		if (!operatorsAsInts.Contains(operatorSet))
